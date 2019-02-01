@@ -1,0 +1,3 @@
+- [ ] add option to use JSON
+- [ ] use global process and window ENV
+- [ ] allow specifying log metadata (useful for microservices)
