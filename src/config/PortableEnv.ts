@@ -1,4 +1,4 @@
-import { UniverseLogError } from "./error/UniverseLogError";
+import { UniverseLogError } from "../error/UniverseLogError";
 
 const isBrowser = new Function("try {return this===window;}catch(e){ return false;}");
 const isNode = new Function("try {return this===global;}catch(e){return false;}");

@@ -1,4 +1,4 @@
-import { LogMetadata } from "../LogMetadata";
+import { LogMetadata } from "../config/LogMetadata";
 import { TimeUtils } from "../util/TimeUtils";
 
 import { LogMessage } from "./LogMessage";

@@ -1,4 +1,4 @@
-import { UniverseLogError } from "./error/UniverseLogError";
+import { UniverseLogError } from "../error/UniverseLogError";
 
 export enum LogLevel {
     error = "error",

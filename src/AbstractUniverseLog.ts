@@ -1,9 +1,9 @@
 /* tslint:disable:no-console */
 import ow from "ow";
 
-import { LiveLogConfig } from "./LiveLogConfig";
-import { LogLevel } from "./LogLevel";
-import { LogMetadata } from "./LogMetadata";
+import { LiveLogConfig } from "./config/LiveLogConfig";
+import { LogLevel } from "./config/LogLevel";
+import { LogMetadata } from "./config/LogMetadata";
 import { ParseLogMsg } from "./parse/ParseLogMsg";
 
 /**

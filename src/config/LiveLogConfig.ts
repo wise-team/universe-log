@@ -1,5 +1,6 @@
-import { FallbackLog } from "./FallbackLog";
-import { LogFormat } from "./format/LogFormat";
+import { LogFormat } from "../format/LogFormat";
+import { FallbackLog } from "../util/FallbackLog";
+
 import { LogLevel } from "./LogLevel";
 import { PortableEnv } from "./PortableEnv";
 import { StaticConfig } from "./StaticConfig";

@@ -1,5 +1,5 @@
+import { LogMetadata } from "../config/LogMetadata";
 import { UniverseLogError } from "../error/UniverseLogError";
-import { LogMetadata } from "../LogMetadata";
 
 import { JsonLogFormat } from "./JsonLogFormat";
 import { LogMessage } from "./LogMessage";

@@ -1,12 +1,12 @@
+import { LogLevel } from "../config/LogLevel";
 import { LogMessage } from "../format/LogMessage";
-import { LogLevel } from "../LogLevel";
 import { TimeUtils } from "../util/TimeUtils";
 
 export class ParseLogMsg {
     public static parse(level: LogLevel, ...msgObjs: any): LogMessage {
         let outObject = ParseLogMsg.basicLogMsg(level);
         for (const msgObj of msgObjs) {
-            outObject = { ...outObject, ...ParseLogMsg.parseElem(msgObjs, outObject) };
+            outObject = { ...outObject, ...ParseLogMsg.parseElem(msgObj, outObject) };
         }
         return outObject as LogMessage;
     }
