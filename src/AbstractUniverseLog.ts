@@ -1,163 +1,95 @@
-import * as winston from "winston";
+/* tslint:disable:no-console */
+import ow from "ow";
+
+import { LiveLogConfig } from "./LiveLogConfig";
+import { LogLevel } from "./LogLevel";
+import { LogMetadata } from "./LogMetadata";
+import { ParseLogMsg } from "./parse/ParseLogMsg";
 
 /**
- * Logging levels in Wise conforms NPM logging levels
+ * Logging levels conforms NPM logging levels
  */
 export abstract class AbstractUniverseLog {
-    private logger?: winston.Logger;
-    private name: string;
-    private verboseOutput: boolean = false;
+    public static level = LogLevel;
+    private metadata: LogMetadata = LogMetadata.EMPTY_METADATA;
+    private liveConfig: LiveLogConfig;
 
-    public constructor(name: string) {
-        this.name = name;
-    }
-
-    public init(evaluateLevels: (string | undefined) []) {
-        const definedLevels: string [] = evaluateLevels
-            .filter(level => !!level)
-            .map(level => level + "");
-
-        const chosenLevels = winston.config.npm.levels;
-        const availableLevelNames = Object.keys(chosenLevels);
-        definedLevels.forEach(level => {
-            if (availableLevelNames.indexOf(level) === -1)
-                throw new Error("Log.init fed with improper log level. "
-                    + "Available levels: [ " + availableLevelNames.join(",") + " ]");
-        });
-        const mostVerboseLevel = definedLevels
-            .reduce((prevLevel: string, currLevel: string) =>
-            chosenLevels[currLevel] > chosenLevels[prevLevel] ? currLevel : prevLevel
-            ) || "info";
-
-        this.logger = winston.createLogger({
-            levels: chosenLevels,
-            level: mostVerboseLevel,
-            transports: [
-                new winston.transports.Console({
-                    stderrLevels: Object.keys(chosenLevels).filter(level => chosenLevels[level] <= chosenLevels.warn),
-                    format: winston.format.combine(
-                        winston.format.timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
-                        winston.format.printf(info => {
-                            if (this.verboseOutput || chosenLevels[info.level] <= chosenLevels["verbose"]) {
-                                return `${this.name} | ${info.timestamp} [${info.level}]: ${info.message}`;
-                            }
-                            else {
-                                return `${this.name} | ${info.message}`;
-                            }
-                        })
-                    ),
-                    handleExceptions: true,
-                    timestamp: true,
-                } as object)
-            ]
-        });
-
-        if (this.logger.levels[this.logger.level] >= this.logger.levels[AbstractUniverseLog.level.http]) {
-            console.log("log.level[\"" + this.name + "\"]=\"" + this.getLogger().level +  "\"");
+    public constructor(props: { metadata?: LogMetadata; levelEnvs: string[] }) {
+        if (props.metadata) {
+            ow(props.metadata, "metadata", ow.object);
+            this.metadata = props.metadata;
         }
+
+        ow(props.levelEnvs, "levelEnvs", ow.object);
+        this.liveConfig = new LiveLogConfig(props.levelEnvs);
     }
 
-    public setVerboseOutput(verboseOutput: boolean) {
-        this.verboseOutput = verboseOutput;
+    public init(logLevelEnvs: Array<string | undefined>) {
+        this.liveConfig.setLevelEvaluationEnvNames(logLevelEnvs);
+    }
+
+    public mutateMetadata(metadata: LogMetadata) {
+        this.metadata = { ...this.metadata, ...metadata };
     }
 
     public getLevel(): string {
-        return this.getLogger().level;
-    }
-
-    public getName(): string {
-        return this.name;
-    }
-
-    public cheapDebug(debugStringReturnerFn: () => string): void {
-        const logger = this.getLogger();
-        if (logger.levels[logger.level] >= logger.levels["debug"]) logger.debug(debugStringReturnerFn());
+        return this.liveConfig.getLevel();
     }
 
     public isDebug() {
-        const logger = this.getLogger();
-        return logger.levels[logger.level] >= logger.levels["debug"];
+        const levelThreshold = LogLevel.LEVELS_VALUES[this.getLevel()];
+        return levelThreshold >= LogLevel.LEVELS_VALUES.debug;
     }
-
-    public cheapInfo(infoStringReturnerFn: () => string): void {
-        const logger = this.getLogger();
-        if (logger.levels[logger.level] >= logger.levels["info"]) logger.debug(infoStringReturnerFn());
-    }
-
-    public promiseResolveDebug<T>(msgBeginning: string, result: T): T {
-        this.cheapDebug(() => msgBeginning + JSON.stringify(result));
-        return result;
-    }
-
-    public promiseRejectionDebug<T>(msgBeginning: string, error: T): T {
-        this.cheapDebug(() => msgBeginning + JSON.stringify(error));
-        throw error;
-    }
-
-    public static level = {
-        error: "error",
-        warn: "warn",
-        info: "info",
-        http: "http",
-        verbose: "verbose",
-        debug: "debug",
-        silly: "silly"
-    };
 
     public error(msg: string) {
-        this.getLogger().error(msg);
+        this.doPlainOrEfficientLog(LogLevel.error, msg);
     }
 
     public warn(msg: string) {
-        this.getLogger().warn(msg);
+        this.doPlainOrEfficientLog(LogLevel.warn, msg);
     }
 
     public info(msg: string) {
-        this.getLogger().info(msg);
+        this.doPlainOrEfficientLog(LogLevel.info, msg);
     }
 
     public http(msg: string) {
-        this.getLogger().http(msg);
+        this.doPlainOrEfficientLog(LogLevel.http, msg);
     }
 
     public verbose(msg: string) {
-        this.getLogger().verbose(msg);
+        this.doPlainOrEfficientLog(LogLevel.verbose, msg);
     }
 
     public debug(msg: string) {
-        this.getLogger().debug(msg);
+        this.doPlainOrEfficientLog(LogLevel.debug, msg);
     }
 
-    public silly(msg: string) {
-        this.getLogger().silly(msg);
+    public silly(msg: string | (() => string)) {
+        this.doPlainOrEfficientLog(LogLevel.silly, msg);
+    }
+
+    public doPlainOrEfficientLog(level: LogLevel, msg: string | (() => string)) {
+        if (typeof msg === "function") {
+            const msgGenerator = msg as (() => string);
+            this.doEfficientLog(level, msgGenerator);
+        } else {
+            this.doPlainLog(level, msg);
+        }
     }
 
     /**
      * Calls generator fn only if logging level is reached.
      */
-    public efficient(level: string, msgGeneratorFn: () => string): void {
-        const logger = this.getLogger();
-        if (logger.levels[logger.level] >= logger.levels[level]) {
-            logger.log(level, msgGeneratorFn());
+    public doEfficientLog(level: LogLevel, msgGeneratorFn: () => string): void {
+        const levelThreshold = LogLevel.LEVELS_VALUES[this.getLevel()];
+        const msgLevel = LogLevel.LEVELS_VALUES[level];
+        if (msgLevel <= levelThreshold) {
+            this.doPlainLog(level, msgGeneratorFn());
         }
     }
 
-    public exception(level: string, error: Error): void {
-        const logger = this.getLogger();
-        logger.log(level, error.name + ": " + error.message
-            + (error.stack ? "\n" + error.stack : ""));
-    }
-
-    public json(level: string, object: object, pretty: boolean = false): void {
-        const logger = this.getLogger();
-        logger.log(level, (pretty ? JSON.stringify(object, undefined, 2) : JSON.stringify(object)));
-    }
-
-    private getLogger(): winston.Logger {
-        if (!this.logger) {
-            this.init([]);
-            if (!this.logger) throw new Error("Could not initialize logger");
-        }
-        return this.logger;
+    public doPlainLog(level: LogLevel, ...msgsObjs: any) {
+        ParseLogMsg.parse(level, msgsObjs);
     }
 }
