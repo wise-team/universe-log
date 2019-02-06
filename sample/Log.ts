@@ -1,19 +1,4 @@
-# universe-log
-
-Universal javascript log for node and browser. Suitable for libraries and microservices. Configurable via env and window. Extendable
-
-### Install
-
-```bash
-$ npm install --save universe-log
-```
-
-### Use in your project (typescript)
-
-Best practice to use universe-log is to create a singleton Log class in your project that extends AbstractUniverseLog.
-
-```typescript
-import { AbstractUniverseLog, PortableEnv } from "universe-log";
+import { AbstractUniverseLog, PortableEnv } from "../src/index";
 
 export class Log extends AbstractUniverseLog {
     public static log(): Log {
@@ -43,11 +28,3 @@ export class Log extends AbstractUniverseLog {
         super.init();
     }
 }
-```
-
-Across your project:
-
-```typescript
-Log.log().info("Info");
-Log.log().cheapDebug(() => "costly log generation");
-```

@@ -33,8 +33,11 @@ export abstract class AbstractUniverseLog {
         this.liveConfig = new LiveLogConfig(props.levelEnvs, (msg: string) => this.logFn(msg));
     }
 
-    public init(logLevelEnvs: string[]) {
-        this.liveConfig.setLevelEvaluationEnvNames(logLevelEnvs);
+    public init(logLevelEnvs?: string[]) {
+        if (logLevelEnvs) {
+            this.liveConfig.setLevelEvaluationEnvNames(logLevelEnvs);
+        }
+        this.reevaluateConfigIfRequired();
     }
 
     public mutateMetadata(metadata: LogMetadata) {
