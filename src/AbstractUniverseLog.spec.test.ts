@@ -80,6 +80,47 @@ describe("AbstractUniverseLog", () => {
         expect(log.getLevel()).to.be.equal(LogLevel.silly);
     });
 
+    describe("log metadata", () => {
+        it("Immediatelly sets metadata via LOG_METADATA env", async () => {
+            const sampleMetadata = { project: "wise-hub", name: `n-${uuid()}` };
+            process.env.LOG_METADATA = JSON.stringify(sampleMetadata);
+            const { log } = prepare({ levelEnvs: [] });
+
+            expect(log.getMetadata())
+                .to.have.haveOwnProperty("project")
+                .that.is.equal(sampleMetadata.project);
+            expect(log.getMetadata())
+                .to.have.haveOwnProperty("name")
+                .that.is.equal(sampleMetadata.name);
+        });
+
+        it("Sets metadata via LOG_METADATA env when configuration changes", async () => {
+            const sampleMetadata = { name: `n1-${uuid()}` };
+            process.env.LOG_METADATA = JSON.stringify(sampleMetadata);
+            const { log } = prepare({ levelEnvs: [] });
+            expect(log.getMetadata().name).to.be.equal(sampleMetadata.name);
+
+            await BluebirdPromise.delay(10);
+            const sampleMetadata2 = { name: `n2-${uuid()}` };
+            process.env.LOG_METADATA = JSON.stringify(sampleMetadata2);
+            await BluebirdPromise.delay(200);
+            log.silly("Sth");
+            expect(log.getMetadata().name).to.be.equal(sampleMetadata2.name);
+        });
+
+        it("Env metadata overrides instance metadata", async () => {
+            const instanceMetadata = { name: `n_instance-${uuid()}`, instance_field: "instance_value" };
+            const envMetadata = { name: `n_env-${uuid()}`, env_field: "env_value" };
+            process.env.LOG_METADATA = JSON.stringify(envMetadata);
+
+            const { log } = prepare({ levelEnvs: [], metadata: instanceMetadata });
+
+            expect(log.getMetadata().name).to.be.equal(envMetadata.name);
+            expect(log.getMetadata().instance_field).to.be.equal(instanceMetadata.instance_field);
+            expect(log.getMetadata().env_field).to.be.equal(envMetadata.env_field);
+        });
+    });
+
     describe("format: json", () => {
         it("produces json", async () => {
             process.env.LOG_FORMAT = "json";

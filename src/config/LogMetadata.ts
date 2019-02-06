@@ -4,6 +4,7 @@ export interface LogMetadata {
     environment?: string;
     service?: string;
     module?: string;
+    library?: string;
     [x: string]: any;
 }
 

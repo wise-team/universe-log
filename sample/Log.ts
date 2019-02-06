@@ -16,9 +16,11 @@ export class Log extends AbstractUniverseLog {
         super({
             metadata: {
                 project: "wise-hub",
-                module: "daemon",
                 environment: PortableEnv("WISE_ENVIRONMENT_TYPE"),
                 service: "monitoring",
+                /** This metadata could be overriden by LOG_METADATA env. Here is an example:
+                 * LOG_METADATA={ "module": "publisher" }
+                 */
             },
             levelEnvs: ["WISE_LOG_LEVEL", "WISE_SUBPROJECT_LOG_LEVEL"],
         });

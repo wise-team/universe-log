@@ -41,9 +41,12 @@ export class Log extends AbstractUniverseLog {
         super({
             metadata: {
                 project: "wise-hub",
-                module: "daemon",
                 environment: PortableEnv("WISE_ENVIRONMENT_TYPE"),
                 service: "monitoring",
+                /** This metadata could be merged (and overriden) by LOG_METADATA env. Here is an example:
+                 * LOG_METADATA={ "module": "publisher" }
+                 * With this env, json log will produce output that contains merged instance metadata and the metadata from env LOG_METADATA.
+                 */
             },
             levelEnvs: ["WISE_LOG_LEVEL", "WISE_SUBPROJECT_LOG_LEVEL"],
         });
@@ -71,3 +74,7 @@ Format:
 Level:
 
 -   Configurable via envs specified in `level_envs` field of `super()` call. Universe-log chooses the most verbose level supplied. When no configurable envs are present, universe-log looks for `LOG_LEVEL` env. If it is also not present, a default `info` level is used.
+
+Metadata:
+
+-   `metadata` field in `super()` call is merged with the value of LOG_METADATA env (if a field exists in both, it is overriden by LOG_METADATA env). LOG_METADATA should contain stringified JSON.

@@ -12,14 +12,14 @@ import { ParseLogMsg } from "./parse/ParseLogMsg";
  */
 export abstract class AbstractUniverseLog {
     public static level = LogLevel;
-    private metadata: LogMetadata = LogMetadata.EMPTY_METADATA;
+    private instanceMetadata: LogMetadata = LogMetadata.EMPTY_METADATA;
     private liveConfig: LiveLogConfig;
     private logFn: (msg: string) => void;
 
     public constructor(props: AbstractUniverseLog.Properties) {
         if (props.metadata) {
             ow(props.metadata, "metadata", ow.object);
-            this.metadata = props.metadata;
+            this.instanceMetadata = props.metadata;
         }
 
         if (props.logFn) {
@@ -40,16 +40,16 @@ export abstract class AbstractUniverseLog {
         this.reevaluateConfigIfRequired();
     }
 
-    public mutateMetadata(metadata: LogMetadata) {
-        this.metadata = { ...this.metadata, ...metadata };
-    }
-
     public getLevel(): LogLevel {
         return this.liveConfig.getLevel();
     }
 
     public getFormatName(): string {
         return this.liveConfig.getFormat().getName();
+    }
+
+    public getMetadata(): LogMetadata {
+        return { ...this.instanceMetadata, ...this.liveConfig.getMetadata() };
     }
 
     public isDebug() {
@@ -139,7 +139,7 @@ export abstract class AbstractUniverseLog {
 
         if (LogLevel.isLessOrEquallyVerbose({ level, threshold: this.getLevel() })) {
             const parsedMessage = ParseLogMsg.parse(level, msgsObjs);
-            const formattedMessage = this.liveConfig.getFormat().format(parsedMessage, this.metadata);
+            const formattedMessage = this.liveConfig.getFormat().format(parsedMessage, this.getMetadata());
             this.rawWriteToLog(formattedMessage);
         }
     }

@@ -1,8 +1,10 @@
 import ow from "ow";
 
 import { LogFormat } from "../format/LogFormat";
+import { FallbackLog } from "../util/FallbackLog";
 
 import { LogLevel } from "./LogLevel";
+import { LogMetadata } from "./LogMetadata";
 import { PortableEnv } from "./PortableEnv";
 import { StaticConfig } from "./StaticConfig";
 
@@ -10,6 +12,7 @@ export class LiveLogConfig {
     private levelEvaluationEnvNames: string[] = [];
     private level: LogLevel = LogLevel.DEFAULT_LEVEL;
     private format: LogFormat = LogFormat.DEFAULT_FORMAT;
+    private metadata: LogMetadata = LogMetadata.EMPTY_METADATA;
     private fallbackLog: (msg: string) => void;
     private nextReevaluateTimestampMs: number = 0;
 
@@ -36,6 +39,10 @@ export class LiveLogConfig {
         return this.format;
     }
 
+    public getMetadata(): LogMetadata {
+        return this.metadata;
+    }
+
     public evaluateIfRequired() {
         if (Date.now() < this.nextReevaluateTimestampMs) {
             return;
@@ -52,6 +59,7 @@ export class LiveLogConfig {
     private evaluate() {
         this.format = this.evaluateFormat();
         this.level = this.evaluateLogLevel();
+        this.metadata = this.evaluateMetadata();
     }
 
     private evaluateFormat(): LogFormat {
@@ -93,5 +101,17 @@ export class LiveLogConfig {
             LogLevel.moreVerbose(theMostVerboseLevel, currLevel),
         );
         return mostVerboseLevel;
+    }
+
+    private evaluateMetadata(): LogMetadata {
+        try {
+            const metadataStr = PortableEnv(StaticConfig.LOG_METADATA_ENV);
+            if (metadataStr) {
+                return JSON.parse(metadataStr);
+            }
+        } catch (error) {
+            FallbackLog.log(`Could not parse value of ${StaticConfig.LOG_METADATA_ENV} env: ${error}`);
+        }
+        return LogMetadata.EMPTY_METADATA;
     }
 }
