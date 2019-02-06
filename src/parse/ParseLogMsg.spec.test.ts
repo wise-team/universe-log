@@ -6,6 +6,7 @@ import "mocha";
 import * as uuid from "uuid/v4";
 
 import { LogLevel } from "../config/LogLevel";
+import { CustomError } from "../error/CustomError";
 
 import { ParseLogMsg } from "./ParseLogMsg";
 
@@ -74,5 +75,31 @@ describe("ParseLogMsg.parse()", () => {
 
         expect(out.other_errors[0].message).to.be.equal(secondError.message);
         expect(out.other_errors[1].message).to.be.equal(thirdError.message);
+    });
+
+    it("supports nested causes", () => {
+        class CustomErrorA extends CustomError {
+            public constructor(message?: string, cause?: Error) {
+                super(message, cause);
+            }
+        }
+        class CustomErrorB extends CustomError {
+            public constructor(message?: string, cause?: Error) {
+                super(message, cause);
+            }
+        }
+        class CustomErrorC extends CustomError {
+            public constructor(message?: string, cause?: Error) {
+                super(message, cause);
+            }
+        }
+
+        const err = new CustomErrorC("error_c", new CustomErrorB("error_b", new CustomErrorA("error_a")));
+
+        const out = ParseLogMsg.parse(LogLevel.LEVELS_BY_NAME.debug, [err]);
+
+        expect(out.error.message).to.be.equal("error_c");
+        expect(out.error.cause.message).to.be.equal("error_b");
+        expect(out.error.cause.cause.message).to.be.equal("error_a");
     });
 });

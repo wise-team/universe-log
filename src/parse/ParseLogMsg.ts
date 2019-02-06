@@ -1,4 +1,5 @@
 import { LogLevel } from "../config/LogLevel";
+import { CustomError } from "../error/CustomError";
 import { LogMessage } from "../format/LogMessage";
 import { TimeUtils } from "../util/TimeUtils";
 
@@ -52,8 +53,17 @@ export class ParseLogMsg {
         return out;
     }
 
-    private static errorToObj(error: Error) {
-        return { name: error.name, message: error.message, stack: error.stack };
+    private static errorToObj(error: Error): { name: string; message: string; stack?: string; cause?: CustomError } {
+        if (error instanceof CustomError) {
+            return {
+                name: error.name,
+                message: error.message,
+                stack: error.stack,
+                ...(error.cause ? { cause: ParseLogMsg.errorToObj(error.cause) } : {}),
+            };
+        } else {
+            return { name: error.name, message: error.message, stack: error.stack };
+        }
     }
 
     private static parseObject(msg: object, outObj: any): object {
