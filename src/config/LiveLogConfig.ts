@@ -1,25 +1,31 @@
+import ow from "ow";
+
 import { LogFormat } from "../format/LogFormat";
-import { FallbackLog } from "../util/FallbackLog";
 
 import { LogLevel } from "./LogLevel";
 import { PortableEnv } from "./PortableEnv";
 import { StaticConfig } from "./StaticConfig";
 
 export class LiveLogConfig {
-    private static EVALUATION_INTERVAL_MS = 200;
-    private levelEvaluationEnvNames: Array<string | undefined> = [];
+    private levelEvaluationEnvNames: string[] = [];
     private level: LogLevel = LogLevel.DEFAULT_LEVEL;
     private format: LogFormat = LogFormat.DEFAULT_FORMAT;
+    private fallbackLog: (msg: string) => void;
+    private nextReevaluateTimestampMs: number = 0;
 
-    public constructor(levelEvaluationEnvNames: Array<string | undefined>) {
+    public constructor(levelEvaluationEnvNames: string[], fallbackLog: (msg: string) => void) {
         this.levelEvaluationEnvNames = levelEvaluationEnvNames;
+        ow(this.levelEvaluationEnvNames, "levelEvaluationEnvNames", ow.array.ofType(ow.string));
 
-        this.evaluateAndSchedule();
+        this.fallbackLog = fallbackLog;
+        ow(this.fallbackLog, "fallbackLog", ow.function);
+
+        this.evaluateIfRequired();
     }
 
-    public setLevelEvaluationEnvNames(levelEvaluationEnvNames: Array<string | undefined>) {
+    public setLevelEvaluationEnvNames(levelEvaluationEnvNames: string[]) {
         this.levelEvaluationEnvNames = levelEvaluationEnvNames;
-        this.evaluate(); // timer is already set
+        this.evaluateIfRequired();
     }
 
     public getLevel(): LogLevel {
@@ -30,12 +36,16 @@ export class LiveLogConfig {
         return this.format;
     }
 
-    private evaluateAndSchedule() {
+    public evaluateIfRequired() {
+        if (Date.now() < this.nextReevaluateTimestampMs) {
+            return;
+        }
+
         try {
+            this.nextReevaluateTimestampMs = Date.now() + StaticConfig.REEVALUATE_CONFIG_AFTER_MS;
             this.evaluate();
-            setTimeout(() => this.evaluateAndSchedule(), LiveLogConfig.EVALUATION_INTERVAL_MS);
         } catch (error) {
-            FallbackLog.log(`Could not evaluate live log config: ${error}: ${error.stack}`);
+            this.fallbackLog(`Could not evaluate live log config: ${error}: ${error.stack}`);
         }
     }
 
@@ -54,12 +64,12 @@ export class LiveLogConfig {
     }
 
     private evaluateLogLevel(): LogLevel {
-        const primaryLevelEvaluation = this.chooseMostVerboseLevel(this.levelEvaluationEnvNames);
+        const primaryLevelEvaluation = this.chooseMostVerboseLevel(this.getEnvValues(this.levelEvaluationEnvNames));
         if (primaryLevelEvaluation) {
             return primaryLevelEvaluation;
         }
 
-        const leastLevelEvaluation = this.chooseMostVerboseLevel([StaticConfig.LEAST_LEVEL_ENV]);
+        const leastLevelEvaluation = this.chooseMostVerboseLevel(this.getEnvValues([StaticConfig.LEAST_LEVEL_ENV]));
         if (leastLevelEvaluation) {
             return leastLevelEvaluation;
         }
@@ -67,8 +77,13 @@ export class LiveLogConfig {
         return LogLevel.DEFAULT_LEVEL;
     }
 
-    private chooseMostVerboseLevel(levelList: Array<string | undefined>): LogLevel | undefined {
-        const definedLevels: LogLevel[] = levelList.filter(level => !!level).map(level => LogLevel.valueOf(level + ""));
+    private getEnvValues(envNames: string[]): string[] {
+        const envValuesOrUndefined = envNames.map(envName => PortableEnv(envName));
+        return envValuesOrUndefined.filter(val => !!val).map(elem => elem || "unreachable");
+    }
+
+    private chooseMostVerboseLevel(levelList: string[]): LogLevel | undefined {
+        const definedLevels: LogLevel[] = levelList.map(level => LogLevel.valueOf(level));
 
         if (definedLevels.length === 0) {
             return undefined;

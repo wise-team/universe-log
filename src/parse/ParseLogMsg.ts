@@ -3,20 +3,23 @@ import { LogMessage } from "../format/LogMessage";
 import { TimeUtils } from "../util/TimeUtils";
 
 export class ParseLogMsg {
-    public static parse(level: LogLevel, ...msgObjs: any): LogMessage {
+    public static parse(level: LogLevel, elems: any[]): LogMessage {
         let outObject = ParseLogMsg.basicLogMsg(level);
-        for (const msgObj of msgObjs) {
-            outObject = { ...outObject, ...ParseLogMsg.parseElem(msgObj, outObject) };
+        for (const elem of elems) {
+            outObject = {
+                ...outObject,
+                ...ParseLogMsg.parseElem(elem, outObject),
+            };
         }
         return outObject as LogMessage;
     }
 
     private static basicLogMsg(level: LogLevel) {
         return {
-            time: TimeUtils.getUTCISOTime(),
+            time_iso: TimeUtils.getUTCISOTime(),
             timestamp: TimeUtils.getTimestamp(),
             level,
-            level_num: LogLevel.LEVELS_VALUES[level],
+            level_value: LogLevel.LEVELS_VALUES[level],
         };
     }
 
@@ -33,19 +36,15 @@ export class ParseLogMsg {
     }
 
     private static parseString(msg: string, outObj: any): object {
-        return { message: (outObj.message || "") + msg };
+        return { message: (outObj.message ? outObj.message + "; " : "") + msg };
     }
 
     private static parseError(error: Error, outObj: any): object {
         const out: any = {};
-        if (!outObj.message) {
-            out.message = error + "";
-        }
+        out.message = (outObj.message ? outObj.message + "; " : "") + (error + "").trim();
 
-        if (out.error) {
-            if (!out.other_errors) {
-                out.other_errors = [];
-            }
+        if (outObj.error) {
+            out.other_errors = [...(outObj.other_errors || [])];
             out.other_errors.push(ParseLogMsg.errorToObj(error));
         } else {
             out.error = ParseLogMsg.errorToObj(error);

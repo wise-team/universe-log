@@ -7,6 +7,7 @@ import { OnelineLogFormat } from "./OnelineLogFormat";
 
 export interface LogFormat {
     format: (msg: LogMessage, metadata: LogMetadata) => string;
+    getName(): string;
 }
 
 export namespace LogFormat {

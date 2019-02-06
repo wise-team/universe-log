@@ -35,12 +35,26 @@ export namespace LogLevel {
 
     export function valueOf(name: string): LogLevel {
         if (typeof LEVELS_BY_NAME[name] === "undefined") {
-            const availableLevels = Object.keys(LEVELS_BY_NAME).join(",");
+            const availableLevels = Object.keys(LEVELS_BY_NAME).join(", ");
             throw new UniverseLogError(
                 `There is no such log level: '${name}'. Available levels: [ ${availableLevels} ]`,
             );
         }
         return LEVELS_BY_NAME[name];
+    }
+
+    export function levelToValue(name: string): number {
+        if (typeof LEVELS_VALUES[name] === "undefined") {
+            const availableLevels = Object.keys(LEVELS_BY_NAME).join(", ");
+            throw new UniverseLogError(
+                `There is no such log level: '${name}'. Available levels: [ ${availableLevels} ]`,
+            );
+        }
+        return LEVELS_VALUES[name];
+    }
+
+    export function isLessOrEquallyVerbose(args: { level: LogLevel; threshold: LogLevel }): boolean {
+        return levelToValue(args.level) <= levelToValue(args.threshold);
     }
 
     export function moreVerbose(a: LogLevel, b: LogLevel): LogLevel {

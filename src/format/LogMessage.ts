@@ -1,8 +1,8 @@
 export interface LogMessage {
-    time: string;
+    time_iso: string;
     timestamp: number;
     message: string;
     level: string;
-    level_num: number;
+    level_value: number;
     [x: string]: any;
 }

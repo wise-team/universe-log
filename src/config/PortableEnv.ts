@@ -19,7 +19,11 @@ function getNodeEnv(name: string): string | undefined {
     if (!process.env) {
         throw new UniverseLogError("PortableEnv: environment is node, but process.env object does not exist");
     }
-    return process.env[name];
+    if (process.env[name]) {
+        return process.env[name];
+    } else {
+        return undefined;
+    }
 }
 
 export function PortableEnv(name: string): string | undefined {
