@@ -49,5 +49,5 @@ Across your project:
 
 ```typescript
 Log.log().info("Info");
-Log.log().cheapDebug(() => "costly log generation");
+Log.log().infoGen(() => "costly log generation");
 ```
