@@ -57,7 +57,7 @@ export abstract class AbstractUniverseLog {
         return levelThreshold >= LogLevel.LEVELS_VALUES.debug;
     }
 
-    public error(...msg: any) {
+    public error(...msg: any[]) {
         this.doLog(LogLevel.error, msg);
     }
 
@@ -65,7 +65,7 @@ export abstract class AbstractUniverseLog {
         this.doEfficientLog(LogLevel.error, genFn);
     }
 
-    public warn(...msg: any) {
+    public warn(...msg: any[]) {
         this.doLog(LogLevel.warn, msg);
     }
 
@@ -73,7 +73,7 @@ export abstract class AbstractUniverseLog {
         this.doEfficientLog(LogLevel.warn, genFn);
     }
 
-    public info(...msg: any) {
+    public info(...msg: any[]) {
         this.doLog(LogLevel.info, msg);
     }
 
@@ -81,7 +81,7 @@ export abstract class AbstractUniverseLog {
         this.doEfficientLog(LogLevel.info, genFn);
     }
 
-    public http(...msg: any) {
+    public http(...msg: any[]) {
         this.doLog(LogLevel.http, msg);
     }
 
@@ -89,7 +89,7 @@ export abstract class AbstractUniverseLog {
         this.doEfficientLog(LogLevel.http, genFn);
     }
 
-    public verbose(...msg: any) {
+    public verbose(...msg: any[]) {
         this.doLog(LogLevel.verbose, msg);
     }
 
@@ -97,7 +97,7 @@ export abstract class AbstractUniverseLog {
         this.doEfficientLog(LogLevel.verbose, genFn);
     }
 
-    public debug(...msg: any) {
+    public debug(...msg: any[]) {
         this.doLog(LogLevel.debug, msg);
     }
 
@@ -105,7 +105,7 @@ export abstract class AbstractUniverseLog {
         this.doEfficientLog(LogLevel.debug, genFn);
     }
 
-    public silly(...msg: any) {
+    public silly(...msg: any[]) {
         this.doLog(LogLevel.silly, msg);
     }
 
@@ -126,7 +126,7 @@ export abstract class AbstractUniverseLog {
         }
     }
 
-    public doLog(level: LogLevel, ...msgsObjs: any) {
+    public doLog(level: LogLevel, ...msgsObjs: any[]) {
         this.reevaluateConfigIfRequired();
 
         if (msgsObjs.length === 0) {
