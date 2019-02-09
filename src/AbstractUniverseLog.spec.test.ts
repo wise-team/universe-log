@@ -490,7 +490,7 @@ describe("AbstractUniverseLog", () => {
 
             const sampleMsg = `msg_${uuid()}`;
             const genFnSpy = sinon.fake.returns(sampleMsg);
-            log.httpoGen(genFnSpy);
+            log.httpGen(genFnSpy);
 
             const logOutputParsed = JSON.parse(output.str);
             expect(logOutputParsed.message).to.be.equal(sampleMsg);

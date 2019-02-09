@@ -85,7 +85,7 @@ export abstract class AbstractUniverseLog {
         this.doLog(LogLevel.http, msg);
     }
 
-    public httpoGen(genFn: () => any[]) {
+    public httpGen(genFn: () => any[]) {
         this.doEfficientLog(LogLevel.http, genFn);
     }
 
