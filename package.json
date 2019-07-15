@@ -24,8 +24,8 @@
     "ts-custom-error": "^3.1.1"
   },
   "devDependencies": {
-    "@commitlint/cli": "7.6.1",
-    "@commitlint/config-conventional": "7.6.0",
+    "@commitlint/cli": "8.1.0",
+    "@commitlint/config-conventional": "8.1.0",
     "@types/bluebird": "3.5.27",
     "@types/chai": "4.1.7",
     "@types/chai-as-promised": "7.1.0",
