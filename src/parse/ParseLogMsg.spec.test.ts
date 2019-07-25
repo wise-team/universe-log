@@ -3,10 +3,10 @@ import { expect, use as chaiUse } from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import * as _ from "lodash";
 import "mocha";
+import ChainedError from "typescript-chained-error";
 import * as uuid from "uuid/v4";
 
 import { LogLevel } from "../config/LogLevel";
-import { CustomError } from "../error/CustomError";
 
 import { ParseLogMsg } from "./ParseLogMsg";
 
@@ -78,17 +78,17 @@ describe("ParseLogMsg.parse()", () => {
     });
 
     it("supports nested causes", () => {
-        class CustomErrorA extends CustomError {
+        class CustomErrorA extends ChainedError {
             public constructor(message?: string, cause?: Error) {
                 super(message, cause);
             }
         }
-        class CustomErrorB extends CustomError {
+        class CustomErrorB extends ChainedError {
             public constructor(message?: string, cause?: Error) {
                 super(message, cause);
             }
         }
-        class CustomErrorC extends CustomError {
+        class CustomErrorC extends ChainedError {
             public constructor(message?: string, cause?: Error) {
                 super(message, cause);
             }

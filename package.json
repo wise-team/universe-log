@@ -21,17 +21,17 @@
   },
   "dependencies": {
     "ow": "^0.13.2",
-    "ts-custom-error": "^3.1.1"
+    "typescript-chained-error": "^1.2.0"
   },
   "devDependencies": {
-    "@commitlint/cli": "7.6.1",
-    "@commitlint/config-conventional": "7.6.0",
+    "@commitlint/cli": "^8.1.0",
+    "@commitlint/config-conventional": "^8.1.0",
     "@types/bluebird": "3.5.27",
     "@types/chai": "4.1.7",
     "@types/chai-as-promised": "7.1.0",
     "@types/lodash": "4.14.136",
     "@types/mocha": "5.2.7",
-    "@types/node": "10.14.12",
+    "@types/node": "^12.6.8",
     "@types/sinon": "7.0.13",
     "@types/uuid": "3.4.5",
     "bluebird": "3.5.5",
