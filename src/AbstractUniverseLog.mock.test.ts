@@ -8,10 +8,6 @@ export class LogMock extends AbstractUniverseLog {
             logFn: (msg: string) => props.logFn(msg),
         });
     }
-
-    public init(levelEnvs: string[]) {
-        super.init(levelEnvs);
-    }
 }
 
 export function prepare(props: AbstractUniverseLog.Properties) {

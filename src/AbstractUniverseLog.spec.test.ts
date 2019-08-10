@@ -15,7 +15,7 @@ chaiUse(chaiAsPromised);
 describe("AbstractUniverseLog", () => {
     it("Initializes with no error", async () => {
         const { log, output } = prepare({ levelEnvs: [] });
-        log.init([]);
+        log.getMetadata();
         expect(output.str).to.be.equal("");
     });
 

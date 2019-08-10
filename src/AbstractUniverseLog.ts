@@ -38,13 +38,6 @@ export abstract class AbstractUniverseLog implements UniverseLog {
         });
     }
 
-    public init(logLevelEnvs?: string[]) {
-        if (logLevelEnvs) {
-            this.liveConfig.setLevelEvaluationEnvNames(logLevelEnvs);
-        }
-        this.reevaluateConfigIfRequired();
-    }
-
     public getLevel(): LogLevel {
         return this.liveConfig.getLevel();
     }
