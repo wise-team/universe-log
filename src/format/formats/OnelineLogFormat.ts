@@ -7,8 +7,8 @@ export class OnelineLogFormat {
 
     public format(msg: LogMessage, metadata: LogMetadata): string {
         const time = msg.time_iso || new Date(msg.timestamp).toISOString() || TimeUtils.getUTCISOTime();
-        const name = LogMetadata.getBestIdentifier(metadata);
-        return `${name} | ${time} [${msg.level}]: ${msg.message}`;
+        const ident = LogMetadata.getBestIdentifier(metadata);
+        return `${ident} | ${time} [${msg.level}]: ${msg.message}`;
     }
 
     public getName(): string {

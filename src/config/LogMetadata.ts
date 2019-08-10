@@ -1,5 +1,5 @@
 export interface LogMetadata {
-    name?: string;
+    tag?: string;
     project?: string;
     environment?: string;
     service?: string;
@@ -17,7 +17,7 @@ export namespace LogMetadata {
         let ident = metadata.service ? `${metadata.service}.` : metadata.project ? `${metadata.project}.` : "";
         ident += metadata.module ? `${metadata.module}.` : "";
         ident += metadata.library ? `[${metadata.library}].` : "";
-        ident += metadata.name || "";
+        ident += metadata.tag || "";
         if (!ident) ident = "universe-log-empty-id";
         return ident;
     }

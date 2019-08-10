@@ -20,18 +20,18 @@ describe("AbstractUniverseLog", () => {
     });
 
     it("When LOG_FORMAT env is not present, sets formatter to defaultFormat specified by params", async () => {
-        for (const formatName of Object.keys(LogFormats.FORMATS)) {
+        for (const formattag of Object.keys(LogFormats.FORMATS)) {
             process.env.LOG_FORMAT = undefined;
-            const { log } = prepare({ levelEnvs: [], defaultFormat: formatName as any });
-            expect(log.getFormatName()).to.be.equal(formatName);
+            const { log } = prepare({ levelEnvs: [], defaultFormat: formattag as any });
+            expect(log.getFormattag()).to.be.equal(formattag);
         }
     });
 
     it("Immediatelly sets formatter via LOG_FORMAT env", async () => {
-        for (const formatName of Object.keys(LogFormats.FORMATS)) {
-            process.env.LOG_FORMAT = formatName;
+        for (const formattag of Object.keys(LogFormats.FORMATS)) {
+            process.env.LOG_FORMAT = formattag;
             const { log } = prepare({ levelEnvs: [] });
-            expect(log.getFormatName()).to.be.equal(formatName);
+            expect(log.getFormattag()).to.be.equal(formattag);
         }
     });
 
@@ -42,7 +42,7 @@ describe("AbstractUniverseLog", () => {
         process.env.LOG_FORMAT = "json_pretty";
         await BluebirdPromise.delay(200);
         log.silly("Sth");
-        expect(log.getFormatName()).to.be.equal("json_pretty");
+        expect(log.getFormattag()).to.be.equal("json_pretty");
     });
 
     it("Does not throw error, but logs when invalid format is supplied", async () => {
@@ -53,7 +53,7 @@ describe("AbstractUniverseLog", () => {
     });
 
     it("Immediatelly sets level via LOG_LEVEL env", async () => {
-        for (const level of Object.keys(LogLevel.LEVELS_BY_NAME)) {
+        for (const level of Object.keys(LogLevel.LEVELS_BY_tag)) {
             process.env.LOG_LEVEL = level;
             const { log, output } = prepare({ levelEnvs: [] });
             expect(log.getLevel()).to.be.equal(level);
@@ -90,7 +90,7 @@ describe("AbstractUniverseLog", () => {
 
     describe("log metadata", () => {
         it("Immediatelly sets metadata via LOG_METADATA env", async () => {
-            const sampleMetadata = { project: "wise-hub", name: `n-${uuid()}` };
+            const sampleMetadata = { project: "wise-hub", tag: `n-${uuid()}` };
             process.env.LOG_METADATA = JSON.stringify(sampleMetadata);
             const { log } = prepare({ levelEnvs: [] });
 
@@ -98,32 +98,32 @@ describe("AbstractUniverseLog", () => {
                 .to.have.haveOwnProperty("project")
                 .that.is.equal(sampleMetadata.project);
             expect(log.getMetadata())
-                .to.have.haveOwnProperty("name")
-                .that.is.equal(sampleMetadata.name);
+                .to.have.haveOwnProperty("tag")
+                .that.is.equal(sampleMetadata.tag);
         });
 
         it("Sets metadata via LOG_METADATA env when configuration changes", async () => {
-            const sampleMetadata = { name: `n1-${uuid()}` };
+            const sampleMetadata = { tag: `n1-${uuid()}` };
             process.env.LOG_METADATA = JSON.stringify(sampleMetadata);
             const { log } = prepare({ levelEnvs: [] });
-            expect(log.getMetadata().name).to.be.equal(sampleMetadata.name);
+            expect(log.getMetadata().tag).to.be.equal(sampleMetadata.tag);
 
             await BluebirdPromise.delay(10);
-            const sampleMetadata2 = { name: `n2-${uuid()}` };
+            const sampleMetadata2 = { tag: `n2-${uuid()}` };
             process.env.LOG_METADATA = JSON.stringify(sampleMetadata2);
             await BluebirdPromise.delay(200);
             log.silly("Sth");
-            expect(log.getMetadata().name).to.be.equal(sampleMetadata2.name);
+            expect(log.getMetadata().tag).to.be.equal(sampleMetadata2.tag);
         });
 
         it("Env metadata overrides instance metadata", async () => {
-            const instanceMetadata = { name: `n_instance-${uuid()}`, instance_field: "instance_value" };
-            const envMetadata = { name: `n_env-${uuid()}`, env_field: "env_value" };
+            const instanceMetadata = { tag: `n_instance-${uuid()}`, instance_field: "instance_value" };
+            const envMetadata = { tag: `n_env-${uuid()}`, env_field: "env_value" };
             process.env.LOG_METADATA = JSON.stringify(envMetadata);
 
             const { log } = prepare({ levelEnvs: [], metadata: instanceMetadata });
 
-            expect(log.getMetadata().name).to.be.equal(envMetadata.name);
+            expect(log.getMetadata().tag).to.be.equal(envMetadata.tag);
             expect(log.getMetadata().instance_field).to.be.equal(instanceMetadata.instance_field);
             expect(log.getMetadata().env_field).to.be.equal(envMetadata.env_field);
         });
@@ -161,7 +161,7 @@ describe("AbstractUniverseLog", () => {
 
             const logOutputParsed = JSON.parse(output.str);
             expect(logOutputParsed.message).to.contain(errorMsg);
-            expect(logOutputParsed.error.name).to.be.equal(sampleError.name);
+            expect(logOutputParsed.error.tag).to.be.equal(sampleError.tag);
             expect(logOutputParsed.error.message).to.be.equal(sampleError.message);
             expect(logOutputParsed.error.stack).to.be.equal(sampleError.stack);
         });
