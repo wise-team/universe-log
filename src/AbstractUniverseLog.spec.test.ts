@@ -9,7 +9,7 @@ import * as uuid from "uuid/v4";
 
 import { prepare } from "./AbstractUniverseLog.mock.test";
 import { LogLevel } from "./config/LogLevel";
-import { LogFormat } from "./format/LogFormat";
+import { LogFormats } from "./format/LogFormats";
 chaiUse(chaiAsPromised);
 
 describe("AbstractUniverseLog", () => {
@@ -19,8 +19,16 @@ describe("AbstractUniverseLog", () => {
         expect(output.str).to.be.equal("");
     });
 
+    it("When LOG_FORMAT env is not present, sets formatter to defaultFormat specified by params", async () => {
+        for (const formatName of Object.keys(LogFormats.FORMATS)) {
+            process.env.LOG_FORMAT = undefined;
+            const { log } = prepare({ levelEnvs: [], defaultFormat: formatName as any });
+            expect(log.getFormatName()).to.be.equal(formatName);
+        }
+    });
+
     it("Immediatelly sets formatter via LOG_FORMAT env", async () => {
-        for (const formatName of Object.keys(LogFormat.FORMATS)) {
+        for (const formatName of Object.keys(LogFormats.FORMATS)) {
             process.env.LOG_FORMAT = formatName;
             const { log } = prepare({ levelEnvs: [] });
             expect(log.getFormatName()).to.be.equal(formatName);

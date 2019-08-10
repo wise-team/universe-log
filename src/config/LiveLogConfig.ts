@@ -1,6 +1,7 @@
 import ow from "ow";
 
 import { LogFormat } from "../format/LogFormat";
+import { LogFormats } from "../format/LogFormats";
 import { FallbackLog } from "../util/FallbackLog";
 
 import { LogLevel } from "./LogLevel";
@@ -11,17 +12,26 @@ import { StaticConfig } from "./StaticConfig";
 export class LiveLogConfig {
     private levelEvaluationEnvNames: string[] = [];
     private level: LogLevel = LogLevel.DEFAULT_LEVEL;
-    private format: LogFormat = LogFormat.DEFAULT_FORMAT;
+    private defaultFormat: LogFormat;
+    private format: LogFormat;
     private metadata: LogMetadata = LogMetadata.EMPTY_METADATA;
     private fallbackLog: (msg: string) => void;
     private nextReevaluateTimestampMs: number = 0;
 
-    public constructor(levelEvaluationEnvNames: string[], fallbackLog: (msg: string) => void) {
-        this.levelEvaluationEnvNames = levelEvaluationEnvNames;
+    public constructor(params: {
+        levelEvaluationEnvNames: string[];
+        fallbackLog: (msg: string) => void;
+        defaultFormat: LogFormat;
+    }) {
+        this.levelEvaluationEnvNames = params.levelEvaluationEnvNames;
         ow(this.levelEvaluationEnvNames, "levelEvaluationEnvNames", ow.array.ofType(ow.string));
 
-        this.fallbackLog = fallbackLog;
+        this.fallbackLog = params.fallbackLog;
         ow(this.fallbackLog, "fallbackLog", ow.function);
+
+        this.defaultFormat = params.defaultFormat;
+        ow(this.defaultFormat, "defaultFormat", ow.object);
+        this.format = this.defaultFormat;
 
         this.evaluateIfRequired();
     }
@@ -65,9 +75,9 @@ export class LiveLogConfig {
     private evaluateFormat(): LogFormat {
         const formatStr = PortableEnv(StaticConfig.LOG_FORMAT_ENV);
         if (formatStr) {
-            return LogFormat.valueOf(formatStr);
+            return LogFormats.valueOf(formatStr);
         } else {
-            return LogFormat.DEFAULT_FORMAT;
+            return LogFormats.DEFAULT_FORMAT;
         }
     }
 

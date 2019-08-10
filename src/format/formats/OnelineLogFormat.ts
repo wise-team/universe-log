@@ -1,7 +1,6 @@
-import { LogMetadata } from "../config/LogMetadata";
-import { TimeUtils } from "../util/TimeUtils";
-
-import { LogMessage } from "./LogMessage";
+import { LogMetadata } from "../../config/LogMetadata";
+import { TimeUtils } from "../../util/TimeUtils";
+import { LogMessage } from "../LogMessage";
 
 export class OnelineLogFormat {
     public static FORMAT_NAME = "oneline";

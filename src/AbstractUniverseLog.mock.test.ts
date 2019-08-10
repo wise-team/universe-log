@@ -14,7 +14,7 @@ export class LogMock extends AbstractUniverseLog {
     }
 }
 
-export function prepare(props: { metadata?: LogMetadata; levelEnvs: string[] }) {
+export function prepare(props: AbstractUniverseLog.Properties) {
     const output: { str: string } = { str: "" };
     const log = new LogMock({
         ...props,

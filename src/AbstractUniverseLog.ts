@@ -1,10 +1,11 @@
 /* tslint:disable:no-console */
-import ow from "ow";
+import ow, { BasePredicate } from "ow";
 
 import { LiveLogConfig } from "./config/LiveLogConfig";
 import { LogLevel } from "./config/LogLevel";
 import { LogMetadata } from "./config/LogMetadata";
 import { StaticConfig } from "./config/StaticConfig";
+import { LogFormats } from "./format/LogFormats";
 import { ParseLogMsg } from "./parse/ParseLogMsg";
 import { UniverseLog } from "./UniverseLog";
 
@@ -18,8 +19,8 @@ export abstract class AbstractUniverseLog implements UniverseLog {
     private logFn: (msg: string) => void;
 
     public constructor(props: AbstractUniverseLog.Properties) {
+        AbstractUniverseLog.Properties.validate(props);
         if (props.metadata) {
-            ow(props.metadata, "metadata", ow.object);
             this.instanceMetadata = props.metadata;
         }
 
@@ -28,10 +29,13 @@ export abstract class AbstractUniverseLog implements UniverseLog {
         } else {
             this.logFn = StaticConfig.DEFAULT_LOG_FN;
         }
-        ow(this.logFn, "logFn", ow.function);
 
-        ow(props.levelEnvs, "levelEnvs", ow.object);
-        this.liveConfig = new LiveLogConfig(props.levelEnvs, (msg: string) => this.logFn(msg));
+        const defaultFormat = props.defaultFormat ? LogFormats.valueOf(props.defaultFormat) : LogFormats.DEFAULT_FORMAT;
+        this.liveConfig = new LiveLogConfig({
+            levelEvaluationEnvNames: props.levelEnvs,
+            fallbackLog: this.logFn,
+            defaultFormat,
+        });
     }
 
     public init(logLevelEnvs?: string[]) {
@@ -156,8 +160,20 @@ export abstract class AbstractUniverseLog implements UniverseLog {
 
 export namespace AbstractUniverseLog {
     export interface Properties {
-        metadata?: LogMetadata;
         levelEnvs: string[];
+        metadata?: LogMetadata;
         logFn?: (msg: string) => void;
+        defaultFormat?: LogFormats.Format;
+    }
+
+    export namespace Properties {
+        export function validate(p: Properties) {
+            ow(p.levelEnvs, "Properties.levelEnvs", ow.object);
+            ow(p.metadata, "Properties.metadata", ow.optional.object);
+            ow(p.logFn, "Properties.logFn", ow.any(ow.undefined, ow.function));
+            ow(p.defaultFormat, "Properties.defaultFormat", ow.optional.string.oneOf(
+                Object.keys(LogFormats.KEYS),
+            ) as BasePredicate<any>);
+        }
     }
 }

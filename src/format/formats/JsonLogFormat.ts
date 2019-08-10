@@ -1,6 +1,5 @@
-import { LogMetadata } from "../config/LogMetadata";
-
-import { LogMessage } from "./LogMessage";
+import { LogMetadata } from "../../config/LogMetadata";
+import { LogMessage } from "../LogMessage";
 
 export class JsonLogFormat {
     public static FORMAT_NAME = "json";
