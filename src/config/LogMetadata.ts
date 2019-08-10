@@ -14,12 +14,11 @@ export namespace LogMetadata {
     };
 
     export function getBestIdentifier(metadata: LogMetadata): string {
-        return (
-            metadata.name ||
-            (metadata.project && metadata.service ? `${metadata.project}.${metadata.service}` : undefined) ||
-            metadata.project ||
-            metadata.service ||
-            "universe-log-no-metadata"
-        );
+        let ident = metadata.service ? `${metadata.service}.` : metadata.project ? `${metadata.project}.` : "";
+        ident += metadata.module ? `${metadata.module}.` : "";
+        ident += metadata.library ? `[${metadata.library}].` : "";
+        ident += metadata.name || "";
+        if (!ident) ident = "universe-log-empty-id";
+        return ident;
     }
 }
