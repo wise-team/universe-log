@@ -23,7 +23,7 @@ describe("AbstractUniverseLog", () => {
         for (const formattag of Object.keys(LogFormats.FORMATS)) {
             process.env.LOG_FORMAT = undefined;
             const { log } = prepare({ levelEnvs: [], defaultFormat: formattag as any });
-            expect(log.getFormattag()).to.be.equal(formattag);
+            expect(log.getFormatName()).to.be.equal(formattag);
         }
     });
 
@@ -31,7 +31,7 @@ describe("AbstractUniverseLog", () => {
         for (const formattag of Object.keys(LogFormats.FORMATS)) {
             process.env.LOG_FORMAT = formattag;
             const { log } = prepare({ levelEnvs: [] });
-            expect(log.getFormattag()).to.be.equal(formattag);
+            expect(log.getFormatName()).to.be.equal(formattag);
         }
     });
 
@@ -42,7 +42,7 @@ describe("AbstractUniverseLog", () => {
         process.env.LOG_FORMAT = "json_pretty";
         await BluebirdPromise.delay(200);
         log.silly("Sth");
-        expect(log.getFormattag()).to.be.equal("json_pretty");
+        expect(log.getFormatName()).to.be.equal("json_pretty");
     });
 
     it("Does not throw error, but logs when invalid format is supplied", async () => {
@@ -53,7 +53,7 @@ describe("AbstractUniverseLog", () => {
     });
 
     it("Immediatelly sets level via LOG_LEVEL env", async () => {
-        for (const level of Object.keys(LogLevel.LEVELS_BY_tag)) {
+        for (const level of Object.keys(LogLevel.LEVELS_BY_NAME)) {
             process.env.LOG_LEVEL = level;
             const { log, output } = prepare({ levelEnvs: [] });
             expect(log.getLevel()).to.be.equal(level);
@@ -161,7 +161,7 @@ describe("AbstractUniverseLog", () => {
 
             const logOutputParsed = JSON.parse(output.str);
             expect(logOutputParsed.message).to.contain(errorMsg);
-            expect(logOutputParsed.error.tag).to.be.equal(sampleError.tag);
+            expect(logOutputParsed.error.name).to.be.equal(sampleError.name);
             expect(logOutputParsed.error.message).to.be.equal(sampleError.message);
             expect(logOutputParsed.error.stack).to.be.equal(sampleError.stack);
         });
