@@ -13,7 +13,6 @@ import { UniverseLog } from "./UniverseLog";
  * Logging levels conforms NPM logging levels
  */
 export abstract class AbstractUniverseLog implements UniverseLog {
-    public static level = LogLevel;
     private instanceMetadata: LogMetadata = LogMetadata.EMPTY_METADATA;
     private liveConfig: LiveLogConfig;
     private logFn: (msg: string) => void;

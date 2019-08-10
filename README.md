@@ -29,7 +29,6 @@ export class Log extends AbstractUniverseLog {
     public static log(): Log {
         if (!Log.INSTANCE) {
             Log.INSTANCE = new Log();
-            Log.INSTANCE.init();
         }
 
         return Log.INSTANCE;
@@ -50,10 +49,6 @@ export class Log extends AbstractUniverseLog {
             },
             levelEnvs: ["WISE_LOG_LEVEL", "WISE_SUBPROJECT_LOG_LEVEL"],
         });
-    }
-
-    public init() {
-        super.init();
     }
 }
 ```
