@@ -1,3 +1,4 @@
+export { UniverseLog } from "./UniverseLog";
 export { AbstractUniverseLog } from "./AbstractUniverseLog";
 export { LogMetadata } from "./config/LogMetadata";
 export { LogLevel } from "./config/LogLevel";

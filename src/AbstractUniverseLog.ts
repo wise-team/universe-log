@@ -6,11 +6,12 @@ import { LogLevel } from "./config/LogLevel";
 import { LogMetadata } from "./config/LogMetadata";
 import { StaticConfig } from "./config/StaticConfig";
 import { ParseLogMsg } from "./parse/ParseLogMsg";
+import { UniverseLog } from "./UniverseLog";
 
 /**
  * Logging levels conforms NPM logging levels
  */
-export abstract class AbstractUniverseLog {
+export abstract class AbstractUniverseLog implements UniverseLog {
     public static level = LogLevel;
     private instanceMetadata: LogMetadata = LogMetadata.EMPTY_METADATA;
     private liveConfig: LiveLogConfig;
