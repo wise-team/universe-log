@@ -9,9 +9,7 @@ export interface LogMetadata {
 }
 
 export namespace LogMetadata {
-    export const EMPTY_METADATA: LogMetadata = {
-        service: "universe-log-no-metadata",
-    };
+    export const EMPTY_METADATA: LogMetadata = {};
 
     export function getBestIdentifier(metadata: LogMetadata): string {
         let ident = metadata.service ? `${metadata.service}.` : metadata.project ? `${metadata.project}.` : "";
