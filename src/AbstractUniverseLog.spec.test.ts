@@ -90,7 +90,7 @@ describe("AbstractUniverseLog", () => {
 
     describe("log metadata", () => {
         it("Immediatelly sets metadata via LOG_METADATA env", async () => {
-            const sampleMetadata = { project: "wise-hub", tag: `n-${uuid()}` };
+            const sampleMetadata = { project: "wise-hub", module: `n-${uuid()}` };
             process.env.LOG_METADATA = JSON.stringify(sampleMetadata);
             const { log } = prepare({ levelEnvs: [] });
 
@@ -98,34 +98,44 @@ describe("AbstractUniverseLog", () => {
                 .to.have.haveOwnProperty("project")
                 .that.is.equal(sampleMetadata.project);
             expect(log.getMetadata())
-                .to.have.haveOwnProperty("tag")
-                .that.is.equal(sampleMetadata.tag);
+                .to.have.haveOwnProperty("module")
+                .that.is.equal(sampleMetadata.module);
         });
 
         it("Sets metadata via LOG_METADATA env when configuration changes", async () => {
-            const sampleMetadata = { tag: `n1-${uuid()}` };
+            const sampleMetadata = { module: `n1-${uuid()}` };
             process.env.LOG_METADATA = JSON.stringify(sampleMetadata);
             const { log } = prepare({ levelEnvs: [] });
-            expect(log.getMetadata().tag).to.be.equal(sampleMetadata.tag);
+            expect(log.getMetadata().module).to.be.equal(sampleMetadata.module);
 
             await BluebirdPromise.delay(10);
-            const sampleMetadata2 = { tag: `n2-${uuid()}` };
+            const sampleMetadata2 = { module: `n2-${uuid()}` };
             process.env.LOG_METADATA = JSON.stringify(sampleMetadata2);
             await BluebirdPromise.delay(200);
             log.silly("Sth");
-            expect(log.getMetadata().tag).to.be.equal(sampleMetadata2.tag);
+            expect(log.getMetadata().module).to.be.equal(sampleMetadata2.module);
         });
 
         it("Env metadata overrides instance metadata", async () => {
-            const instanceMetadata = { tag: `n_instance-${uuid()}`, instance_field: "instance_value" };
-            const envMetadata = { tag: `n_env-${uuid()}`, env_field: "env_value" };
+            const instanceMetadata = { module: `n_instance-${uuid()}`, instance_field: "instance_value" };
+            const envMetadata = { module: `n_env-${uuid()}`, env_field: "env_value" };
             process.env.LOG_METADATA = JSON.stringify(envMetadata);
 
             const { log } = prepare({ levelEnvs: [], metadata: instanceMetadata });
 
-            expect(log.getMetadata().tag).to.be.equal(envMetadata.tag);
+            expect(log.getMetadata().module).to.be.equal(envMetadata.module);
             expect(log.getMetadata().instance_field).to.be.equal(instanceMetadata.instance_field);
             expect(log.getMetadata().env_field).to.be.equal(envMetadata.env_field);
+        });
+
+        it("Env metadata does not override tag", async () => {
+            const instanceMetadata = { tag: "instance-tag" };
+            const envMetadata = { tag: "env-tag" };
+            process.env.LOG_METADATA = JSON.stringify(envMetadata);
+
+            const { log } = prepare({ levelEnvs: [], metadata: instanceMetadata });
+
+            expect(log.getMetadata().tag).to.be.equal(instanceMetadata.tag);
         });
     });
 

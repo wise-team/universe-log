@@ -117,11 +117,17 @@ export class LiveLogConfig {
         try {
             const metadataStr = PortableEnv(StaticConfig.LOG_METADATA_ENV);
             if (metadataStr) {
-                return JSON.parse(metadataStr);
+                const metadataObj = JSON.parse(metadataStr);
+                return this.removeTagFromMetadata(metadataObj);
             }
         } catch (error) {
             FallbackLog.log(`Could not parse value of ${StaticConfig.LOG_METADATA_ENV} env: ${error}`);
         }
         return LogMetadata.EMPTY_METADATA;
+    }
+
+    private removeTagFromMetadata(metadata: LogMetadata): LogMetadata {
+        const { tag, ...metadataWithoutTag } = metadata;
+        return metadataWithoutTag;
     }
 }

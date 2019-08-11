@@ -1,5 +1,7 @@
 export { UniverseLog } from "./UniverseLog";
 export { AbstractUniverseLog } from "./AbstractUniverseLog";
+export { LogEngine } from "./LogEngine";
+export { Properties as UniverseLogProperties } from "./Properties";
 export { LogMetadata } from "./config/LogMetadata";
 export { LogLevel } from "./config/LogLevel";
 export { PortableEnv } from "./config/PortableEnv";

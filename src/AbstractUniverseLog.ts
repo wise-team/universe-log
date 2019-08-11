@@ -1,52 +1,35 @@
 /* tslint:disable:no-console */
-import ow, { BasePredicate } from "ow";
 
-import { LiveLogConfig } from "./config/LiveLogConfig";
 import { LogLevel } from "./config/LogLevel";
 import { LogMetadata } from "./config/LogMetadata";
-import { StaticConfig } from "./config/StaticConfig";
-import { LogFormats } from "./format/LogFormats";
-import { ParseLogMsg } from "./parse/ParseLogMsg";
+import { LogEngine } from "./LogEngine";
+import { Properties } from "./Properties";
 import { UniverseLog } from "./UniverseLog";
 
 /**
  * Logging levels conforms NPM logging levels
  */
 export abstract class AbstractUniverseLog implements UniverseLog {
-    private instanceMetadata: LogMetadata = LogMetadata.EMPTY_METADATA;
-    private liveConfig: LiveLogConfig;
-    private logFn: (msg: string) => void;
+    private logEngine: LogEngine;
 
-    public constructor(props: AbstractUniverseLog.Properties) {
-        AbstractUniverseLog.Properties.validate(props);
-        if (props.metadata) {
-            this.instanceMetadata = props.metadata;
-        }
-
-        if (props.logFn) {
-            this.logFn = props.logFn;
+    public constructor(propsOrEngine: Properties | LogEngine) {
+        if (propsOrEngine instanceof LogEngine) {
+            this.logEngine = propsOrEngine;
         } else {
-            this.logFn = StaticConfig.DEFAULT_LOG_FN;
+            this.logEngine = new LogEngine(propsOrEngine);
         }
-
-        const defaultFormat = props.defaultFormat ? LogFormats.valueOf(props.defaultFormat) : LogFormats.DEFAULT_FORMAT;
-        this.liveConfig = new LiveLogConfig({
-            levelEvaluationEnvNames: props.levelEnvs,
-            fallbackLog: this.logFn,
-            defaultFormat,
-        });
     }
 
     public getLevel(): LogLevel {
-        return this.liveConfig.getLevel();
+        return this.logEngine.getLevel();
     }
 
     public getFormatName(): string {
-        return this.liveConfig.getFormat().getName();
+        return this.logEngine.getFormatName();
     }
 
     public getMetadata(): LogMetadata {
-        return { ...this.instanceMetadata, ...this.liveConfig.getMetadata() };
+        return this.logEngine.getMetadata();
     }
 
     public isDebug() {
@@ -114,58 +97,14 @@ export abstract class AbstractUniverseLog implements UniverseLog {
      * Calls generator fn only if logging level is reached.
      */
     public doEfficientLog(level: LogLevel, msgGeneratorFn: () => any[]): void {
-        this.reevaluateConfigIfRequired();
-
-        const levelThreshold = LogLevel.LEVELS_VALUES[this.getLevel()];
-        const msgLevel = LogLevel.LEVELS_VALUES[level];
-        if (msgLevel <= levelThreshold) {
-            this.doLog(level, msgGeneratorFn());
-        }
+        this.logEngine.doEfficientLog(level, msgGeneratorFn);
     }
 
     public doLog(level: LogLevel, ...msgsObjs: any[]) {
-        this.reevaluateConfigIfRequired();
-
-        if (msgsObjs.length === 0) {
-            return;
-        }
-
-        if (msgsObjs.length === 1 && Array.isArray(msgsObjs[0])) {
-            msgsObjs = msgsObjs[0];
-        }
-
-        if (LogLevel.isLessOrEquallyVerbose({ level, threshold: this.getLevel() })) {
-            const parsedMessage = ParseLogMsg.parse(level, msgsObjs);
-            const formattedMessage = this.liveConfig.getFormat().format(parsedMessage, this.getMetadata());
-            this.rawWriteToLog(formattedMessage);
-        }
+        this.logEngine.doLog(level, ...msgsObjs);
     }
 
-    private rawWriteToLog(msg: string) {
-        this.logFn(msg);
-    }
-
-    private reevaluateConfigIfRequired() {
-        this.liveConfig.evaluateIfRequired();
-    }
-}
-
-export namespace AbstractUniverseLog {
-    export interface Properties {
-        levelEnvs: string[];
-        metadata?: LogMetadata;
-        logFn?: (msg: string) => void;
-        defaultFormat?: LogFormats.Format;
-    }
-
-    export namespace Properties {
-        export function validate(p: Properties) {
-            ow(p.levelEnvs, "Properties.levelEnvs", ow.object);
-            ow(p.metadata, "Properties.metadata", ow.optional.object);
-            ow(p.logFn, "Properties.logFn", ow.any(ow.undefined, ow.function));
-            ow(p.defaultFormat, "Properties.defaultFormat", ow.optional.string.oneOf(
-                Object.keys(LogFormats.KEYS),
-            ) as BasePredicate<any>);
-        }
+    protected getEngine(): LogEngine {
+        return this.logEngine;
     }
 }
