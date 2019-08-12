@@ -236,19 +236,20 @@ describe("AbstractUniverseLog", () => {
         beforeEach(() => {
             process.env.LOG_FORMAT = "oneline";
         });
+
         it("oneline produces single line log msgs", async () => {
             process.env.LOG_LEVEL = "silly";
             const { log, output } = prepare({ levelEnvs: [] });
 
-            log.error("msg", new Error("hehe"));
+            log.error("msg");
 
             expect(output.str.trim()).to.not.contain("\n");
         });
 
         it("each message is in separate line", async () => {
             const { log, output } = prepare({ levelEnvs: [] });
-            log.error("some message", new Error("with some error"));
-            log.warn("some message", new Error("with some error"));
+            log.error("some message");
+            log.warn("some message");
             expect(output.str.trim().split("\n"))
                 .to.be.an("array")
                 .with.length(2);
@@ -261,6 +262,16 @@ describe("AbstractUniverseLog", () => {
             log.error("msg", new Error("hehe"));
 
             expect(output.str).to.match(/\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z)/);
+        });
+
+        it("prints error stack", async () => {
+            process.env.LOG_LEVEL = "silly";
+            const { log, output } = prepare({ levelEnvs: [] });
+
+            const errorWithStack = new Error("hehe");
+            log.error("msg", errorWithStack);
+
+            expect(output.str.trim()).to.contain(errorWithStack.stack);
         });
     });
 
