@@ -144,8 +144,11 @@ describe("AbstractUniverseLog", () => {
     });
 
     describe("format: json", () => {
-        it("produces json", async () => {
+        beforeEach(() => {
             process.env.LOG_FORMAT = "json";
+        });
+
+        it("produces json", async () => {
             const { log, output } = prepare({ levelEnvs: [] });
             log.error("some message", new Error("with some error"));
             expect(output.str.trim())
@@ -154,8 +157,14 @@ describe("AbstractUniverseLog", () => {
             expect(() => JSON.parse(output.str)).to.not.throw();
         });
 
+        it("error includes stack", async () => {
+            const { log, output } = prepare({ levelEnvs: [] });
+            log.error("some message", new Error("with some error"));
+            const parsedMsg = JSON.parse(output.str);
+            expect(parsedMsg.error).to.haveOwnProperty("stack");
+        });
+
         it("each message is in separate line", async () => {
-            process.env.LOG_FORMAT = "json";
             const { log, output } = prepare({ levelEnvs: [] });
             log.error("some message", new Error("with some error"));
             log.warn("some message", new Error("with some error"));
@@ -165,7 +174,6 @@ describe("AbstractUniverseLog", () => {
         });
 
         it("attaches standard fields", async () => {
-            process.env.LOG_FORMAT = "json";
             process.env.LOG_LEVEL = "silly";
             const { log, output } = prepare({ levelEnvs: [] });
 
@@ -181,7 +189,6 @@ describe("AbstractUniverseLog", () => {
         });
 
         it("attaches custom fields", async () => {
-            process.env.LOG_FORMAT = "json";
             process.env.LOG_LEVEL = "silly";
             const { log, output } = prepare({ levelEnvs: [] });
 
@@ -193,7 +200,6 @@ describe("AbstractUniverseLog", () => {
         });
 
         it("timestamp is attached to json log", async () => {
-            process.env.LOG_FORMAT = "json";
             process.env.LOG_LEVEL = "silly";
             const { log, output } = prepare({ levelEnvs: [] });
 
