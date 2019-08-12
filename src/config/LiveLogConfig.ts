@@ -77,7 +77,7 @@ export class LiveLogConfig {
         if (formatStr) {
             return LogFormats.valueOf(formatStr);
         } else {
-            return LogFormats.DEFAULT_FORMAT;
+            return this.defaultFormat;
         }
     }
 
