@@ -13,6 +13,10 @@ import { LogFormats } from "./format/LogFormats";
 chaiUse(chaiAsPromised);
 
 describe("AbstractUniverseLog", () => {
+    beforeEach(() => {
+        process.env = {};
+    });
+
     it("Initializes with no error", async () => {
         const { log, output } = prepare({ levelEnvs: [] });
         log.getMetadata();
@@ -223,8 +227,10 @@ describe("AbstractUniverseLog", () => {
     });
 
     describe("format: oneline", () => {
-        it("oneline produces single line log msgs", async () => {
+        beforeEach(() => {
             process.env.LOG_FORMAT = "oneline";
+        });
+        it("oneline produces single line log msgs", async () => {
             process.env.LOG_LEVEL = "silly";
             const { log, output } = prepare({ levelEnvs: [] });
 
@@ -234,7 +240,6 @@ describe("AbstractUniverseLog", () => {
         });
 
         it("each message is in separate line", async () => {
-            process.env.LOG_FORMAT = "json";
             const { log, output } = prepare({ levelEnvs: [] });
             log.error("some message", new Error("with some error"));
             log.warn("some message", new Error("with some error"));
@@ -244,7 +249,6 @@ describe("AbstractUniverseLog", () => {
         });
 
         it("ISO time is attached to oneline log", async () => {
-            process.env.LOG_FORMAT = "oneline";
             process.env.LOG_LEVEL = "silly";
             const { log, output } = prepare({ levelEnvs: [] });
 
