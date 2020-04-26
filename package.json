@@ -33,7 +33,7 @@
     "@types/mocha": "5.2.7",
     "@types/node": "^12.7.1",
     "@types/sinon": "7.0.13",
-    "@types/uuid": "3.4.5",
+    "@types/uuid": "7.0.3",
     "bluebird": "3.5.5",
     "chai": "4.2.0",
     "chai-as-promised": "7.1.1",
@@ -45,7 +45,7 @@
     "ts-node": "8.3.0",
     "tslint": "5.18.0",
     "typescript": "3.5.3",
-    "uuid": "3.3.2",
+    "uuid": "7.0.3",
     "wise-tslint-configuration": "0.2.0"
   },
   "commitlint": {
